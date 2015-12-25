@@ -20,6 +20,7 @@
 #include <netinet/in.h>
 #endif
 
+#include "Common/Logging/Log.h"
 #include "Core/Host.h"
 #include "Core/PowerPC/GDBStub.h"
 
