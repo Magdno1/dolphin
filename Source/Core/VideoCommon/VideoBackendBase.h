@@ -66,13 +66,12 @@ public:
 
 	virtual unsigned int PeekMessages() = 0;
 
-	virtual bool Initialize(void *window_handle) = 0;
+	virtual bool Initialize(void* window_handle) = 0;
 	virtual void Shutdown() = 0;
 	virtual void RunLoop(bool enable) = 0;
 
 	virtual std::string GetName() const = 0;
 	virtual std::string GetDisplayName() const { return GetName(); }
-	virtual std::string GetConfigName() const = 0;
 
 	virtual void ShowConfig(void*) = 0;
 
@@ -116,6 +115,9 @@ public:
 	virtual void CheckInvalidState() = 0;
 
 	virtual void UpdateWantDeterminism(bool want) {}
+
+protected:
+	bool m_initialized = false;
 };
 
 extern std::vector<VideoBackend*> g_available_video_backends;

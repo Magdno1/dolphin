@@ -65,19 +65,14 @@ std::string VideoSoftware::GetDisplayName() const
 	return "Software Renderer";
 }
 
-std::string VideoSoftware::GetConfigName() const
-{
-	return "gfx_software";
-}
-
 void VideoSoftware::ShowConfig(void *hParent)
 {
-	Host_ShowVideoConfig(hParent, GetDisplayName(), GetConfigName());
+	Host_ShowVideoConfig(hParent, GetDisplayName(), "gfx_software");
 }
 
 bool VideoSoftware::Initialize(void *window_handle)
 {
-	g_SWVideoConfig.Load((File::GetUserPath(D_CONFIG_IDX) + GetConfigName() + ".ini").c_str());
+	g_SWVideoConfig.Load((File::GetUserPath(D_CONFIG_IDX) + "gfx_software.ini").c_str());
 
 	SWOGLWindow::Init(window_handle);
 
@@ -91,6 +86,7 @@ bool VideoSoftware::Initialize(void *window_handle)
 	SWRenderer::Init();
 	DebugUtil::Init();
 
+	m_initialized = true;
 	return true;
 }
 
@@ -150,6 +146,8 @@ void VideoSoftware::EmuStateChange(EMUSTATE_CHANGE newState)
 
 void VideoSoftware::Shutdown()
 {
+	m_initialized = false;
+
 	// TODO: should be in Video_Cleanup
 	SWRenderer::Shutdown();
 	DebugUtil::Shutdown();

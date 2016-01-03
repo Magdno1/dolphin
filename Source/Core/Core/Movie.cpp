@@ -228,9 +228,6 @@ void InputUpdate()
 		s_totalTickCount += CoreTiming::GetTicks() - s_tickCountAtLastInput;
 		s_tickCountAtLastInput = CoreTiming::GetTicks();
 	}
-
-	if (IsPlayingInput() && g_currentInputCount == (g_totalInputCount - 1) && SConfig::GetInstance().m_PauseMovie)
-		Core::SetState(Core::CORE_PAUSE);
 }
 
 void SetFrameSkipping(unsigned int framesToSkip)
@@ -500,6 +497,14 @@ bool BeginRecordingInput(int controllers)
 		md5thread.detach();
 		GetSettings();
 	}
+
+	// Wiimotes cause desync issues if they're not reset before launching the game
+	if (!Core::IsRunningAndStarted())
+	{
+	        // This will also reset the wiimotes for gamecube games, but that shouldn't do anything
+	        Wiimote::ResetAllWiimotes();
+	}
+
 	s_playMode = MODE_RECORDING;
 	s_author = SConfig::GetInstance().m_strMovieAuthor;
 	EnsureTmpInputSize(1);
@@ -854,6 +859,9 @@ bool PlayInput(const std::string& filename)
 
 	s_playMode = MODE_PLAYING;
 
+	// Wiimotes cause desync issues if they're not reset before launching the game
+	Wiimote::ResetAllWiimotes();
+
 	Core::UpdateWantDeterminism();
 
 	s_totalBytes = g_recordfd.GetSize() - 256;
@@ -1194,6 +1202,9 @@ void EndPlayInput(bool cont)
 		//g_totalFrames = s_totalBytes = 0;
 		//delete tmpInput;
 		//tmpInput = nullptr;
+
+		if (SConfig::GetInstance().m_PauseMovie)
+			Core::SetState(Core::CORE_PAUSE);
 	}
 }
 

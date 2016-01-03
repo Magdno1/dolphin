@@ -5,22 +5,20 @@
 #include <memory>
 #include <string>
 
+#include "Common/CommonTypes.h"
 #include "Common/FileUtil.h"
-#include "Common/IniFile.h"
 #include "Common/StringUtil.h"
-#include "Common/Logging/LogManager.h"
 
 #include "Core/ConfigManager.h"
-#include "Core/Core.h"
 #include "Core/Host.h"
 
 #include "VideoBackends/D3D/BoundingBox.h"
 #include "VideoBackends/D3D/D3DBase.h"
 #include "VideoBackends/D3D/D3DUtil.h"
 #include "VideoBackends/D3D/GeometryShaderCache.h"
-#include "VideoBackends/D3D/Globals.h"
 #include "VideoBackends/D3D/PerfQuery.h"
 #include "VideoBackends/D3D/PixelShaderCache.h"
+#include "VideoBackends/D3D/Render.h"
 #include "VideoBackends/D3D/TextureCache.h"
 #include "VideoBackends/D3D/VertexManager.h"
 #include "VideoBackends/D3D/VertexShaderCache.h"
@@ -31,7 +29,6 @@
 #include "VideoCommon/Fifo.h"
 #include "VideoCommon/GeometryShaderManager.h"
 #include "VideoCommon/IndexGenerator.h"
-#include "VideoCommon/OnScreenDisplay.h"
 #include "VideoCommon/OpcodeDecoding.h"
 #include "VideoCommon/PixelEngine.h"
 #include "VideoCommon/PixelShaderManager.h"
@@ -63,11 +60,6 @@ std::string VideoBackend::GetName() const
 std::string VideoBackend::GetDisplayName() const
 {
 	return "Direct3D";
-}
-
-std::string VideoBackend::GetConfigName() const
-{
-	return "gfx_dx11";
 }
 
 void InitBackendInfo()
@@ -148,7 +140,7 @@ void InitBackendInfo()
 void VideoBackend::ShowConfig(void *hParent)
 {
 	InitBackendInfo();
-	Host_ShowVideoConfig(hParent, GetDisplayName(), GetConfigName());
+	Host_ShowVideoConfig(hParent, GetDisplayName(), "gfx_dx11");
 }
 
 bool VideoBackend::Initialize(void *window_handle)
@@ -161,15 +153,14 @@ bool VideoBackend::Initialize(void *window_handle)
 
 	frameCount = 0;
 
-	g_Config.Load(File::GetUserPath(D_CONFIG_IDX) + GetConfigName() + ".ini");
+	g_Config.Load(File::GetUserPath(D_CONFIG_IDX) + "gfx_dx11.ini");
 	g_Config.GameIniLoad();
 	g_Config.UpdateProjectionHack();
 	g_Config.VerifyValidity();
 	UpdateActiveConfig();
 
 	m_window_handle = window_handle;
-
-	s_BackendInitialized = true;
+	m_initialized = true;
 
 	return true;
 }
@@ -205,7 +196,7 @@ void VideoBackend::Video_Prepare()
 
 void VideoBackend::Shutdown()
 {
-	s_BackendInitialized = false;
+	m_initialized = false;
 
 	// TODO: should be in Video_Cleanup
 	if (g_renderer)
